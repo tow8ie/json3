@@ -214,10 +214,50 @@
       return typeof value == "string" ? parseInt(value, 2) : value;
     });
     this.serializes("{\n  \"bar\": 456\n}", {"foo": 123, "bar": 456}, "Object; optional `filter` and `whitespace` arguments", ["bar"], 2);
-    // Test adapted from the Opera JSON test suite via Ken Snyder.
-    // See http://testsuites.opera.com/JSON/correctness/scripts/045.js
-    this.serializes('{"PI":3.141592653589793}', Math, "List of non-enumerable property names specified as the `filter` argument", ["PI"]);
-    this.done(3);
+    this.done(2);
+  });
+
+  /*
+   * The following tests are adapted from the Opera JSON test suite.
+   * Copyright 2009, Opera Software ASA. Distributed under the New BSD License.
+   *
+   * Redistribution and use in source and binary forms, with or without
+   * modification, are permitted provided that the following conditions are met:
+   *
+   *   - Redistributions of source code must retain the above copyright notice,
+   *     this list of conditions and the following disclaimer.
+   *   - Redistributions in binary form must reproduce the above copyright notice,
+   *     this list of conditions and the following disclaimer in the documentation
+   *     and/or other materials provided with the distribution.
+   *   - Neither the name of Opera Software nor the names of its contributors
+   *     may be used to endorse or promote products derived from this software
+   *     without specific prior written permission.
+   *
+   * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+   * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+   * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+   * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+   * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+   * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+   * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+   * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+   * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+   * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+   * POSSIBILITY OF SUCH DAMAGE.
+  */
+  testSuite.addTest("Opera JSON Test Suite", function (test) {
+    test.serializes('{"PI":3.141592653589793}', Math, "Serializing an object with a property name list containing non-enumerable properties", ["PI"]);
+    (function () {
+      // This test will fail in Netscape 6.2.3 and Mozilla 1.0.
+      test.serializes('{"0":1}', arguments, "Serializing an `arguments` object");
+    })(1);
+    (function () {
+      var result = JSON.stringify(arguments, ["0", "length"]);
+      // The property serialization order is implementation-dependent, so a
+      // direct comparison via `Test#serializes` is not guaranteed to succeed.
+      test.ok(result.indexOf('"0":"a"') > -1 && result.indexOf('"length":3') > -1 && result.length == 20, "Serializing an `arguments` object with a property name list");
+    })("a", "b", "c");
+    test.done(3);
   });
 
   testSuite.addTest("`stringify`", function () {
